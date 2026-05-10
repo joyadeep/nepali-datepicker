@@ -170,31 +170,125 @@ Includes all `Picker` props plus:
 | `containerClassName` | `string` | — | Classes for the outer wrapper `div` |
 | `todayButtonClassName` | `string` | — | Classes for the "Today" shortcut button |
 
-### Main Utility Functions
+### Date Utility Functions
 
+The library comes with a rich set of native Bikram Sambat date manipulation utilities:
+
+**Core Conversions**
 | Function | Description |
 | :--- | :--- |
 | `bsToAd(y, m, d)` | Returns `{ year, month, day }` in Gregorian. |
 | `adToBs(y, m, d)` | Returns `{ year, month, day }` in Bikram Sambat. |
-| `formatBsDate(date, str, lang)` | Formats a BS date object using tokens (YYYY, MMMM, D). |
 | `getTodayBs()` | Returns the current date as a BS object. |
 | `isValidBsDate(y, m, d)` | Validates if a BS date exists in history. |
+
+**Date Manipulation & Math**
+| Function | Description |
+| :--- | :--- |
+| `addDays(date, n) / subDays(date, n)` | Add or subtract days. |
+| `addMonths(date, n) / subMonths(date, n)` | Add or subtract months. |
+| `addYears(date, n) / subYears(date, n)` | Add or subtract years. |
+| `startOfMonth(date) / endOfMonth(date)` | Returns the first/last day of the BS month. |
+
+**Date Comparisons & Differences**
+| Function | Description |
+| :--- | :--- |
+| `isSameDate(d1, d2)` | Returns true if dates match. |
+| `isBefore(d1, d2) / isAfter(d1, d2)` | Compares chronological order. |
+| `differenceInDays(d1, d2)` | Number of days between two dates. |
+| `isWeekend(date)` | Checks if date falls on Saturday. |
+
+**Formatting & Parsing**
+| Function | Description |
+| :--- | :--- |
+| `formatBsDate(date, str, lang)` | Formats a BS date using tokens (YYYY, MMMM, D). |
+| `timeAgo(date, lang)` | Relative time string (e.g., "2 days ago", "२ दिन अगाडि"). |
+| `toNepaliNumeral(num) / toEnglishNumeral(str)` | Numeral conversions. |
+
+#### 💡 Utility Examples
+
+```tsx
+import { 
+  addDays, 
+  getTodayBs, 
+  formatBsDate, 
+  timeAgo,
+  isWeekend
+} from '@munatech/nepali-datepicker'
+
+// Math & Formatting
+const today = getTodayBs() // { year: 2082, month: 10, day: 6 }
+const nextWeek = addDays(today, 7)
+console.log(formatBsDate(nextWeek, 'MMMM D, YYYY', 'en')) 
+// Output: "Magh 13, 2082"
+
+// Relative Time
+const pastDate = { year: 2082, month: 10, day: 1 }
+console.log(timeAgo(pastDate)) 
+// Output: "5 days ago"
+
+// Weekend Check
+if (isWeekend(today)) {
+  console.log("It's Saturday! 🎉")
+}
+```
 
 ---
 
 ## 🎨 Customization (Tailwind v4)
 
-This library uses the **NDP Namespace** (`-ndp`) for all Tailwind classes to ensure zero CSS conflicts with your existing project styles.
+The Date Picker is designed to be highly customizable and minimal. Since it’s built with standard React and Tailwind CSS v4, you have a lot of flexibility. 
 
-To customize the colors, add these CSS variables to your theme:
+### 1. Minimal Layout using Props
+Use `className` and `calendarClassName` to strip away defaults and make the trigger ultra-minimal.
+
+```tsx
+<Picker
+  value={date}
+  onChange={setDate}
+  // Remove borders and background to make the trigger ultra-minimal
+  className="border-none bg-transparent shadow-none hover:bg-gray-100 text-gray-700"
+  // Style the popup calendar container
+  calendarClassName="rounded-2xl shadow-sm border border-gray-100"
+  captionLayout="buttons" // Keeps the minimal text + arrows header
+/>
+```
+
+### 2. Standalone Calendar for Custom UI
+If you don't want the default popover trigger, you can use the barebones `Calendar` component and build your own wrapper (like a custom modal, sliding drawer, or inline display).
+
+```tsx
+<div className="p-4 bg-white rounded-xl max-w-sm">
+  <h3 className="text-sm font-medium text-gray-500 mb-2">Pick a date</h3>
+  <Calendar 
+    selected={date} 
+    onSelect={setDate}
+    className="w-full" // Minimal barebones calendar
+  />
+</div>
+```
+
+### 3. Overriding Theme Variables
+This library uses the **NDP Namespace** (`-ndp`) for all Tailwind classes to ensure zero CSS conflicts. To globally change colors or border radius, override these CSS variables in your global CSS:
 
 ```css
 :root {
+  /* Core Backgrounds */
   --background-ndp: #ffffff;
-  --primary-ndp: #dc2626; /* Nepali Flag Red */
+  
+  /* Make the primary selection color a minimal dark gray */
+  --primary-ndp: #171717; 
   --primary-foreground-ndp: #ffffff;
-  --border-ndp: #e2e8f0;
-  --radius-ndp: 0.75rem;
+  
+  /* Make hover states subtle */
+  --accent-ndp: #f5f5f5;
+  --accent-foreground-ndp: #171717;
+  
+  /* Make borders softer */
+  --border-ndp: #f0f0f0;
+  
+  /* Round the calendar corners heavily */
+  --radius-ndp: 1rem; 
 }
 ```
 

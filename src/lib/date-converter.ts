@@ -308,3 +308,218 @@ export function isBsDateInRange(
   if (maxDate && compareBsDates(date, maxDate) > 0) return false
   return true
 }
+
+/**
+ * Adds a specific number of days to a Nepali date.
+ *
+ * @param date - The starting date
+ * @param days - Number of days to add
+ * @returns A new NepaliDate object
+ */
+export function addDays(date: NepaliDate, days: number): NepaliDate {
+  const adDate = bsToAd(date.year, date.month, date.day)
+  const newAdDate = new Date(adDate.year, adDate.month - 1, adDate.day + days)
+  return adToBs(newAdDate.getFullYear(), newAdDate.getMonth() + 1, newAdDate.getDate())
+}
+
+/**
+ * Subtracts a specific number of days from a Nepali date.
+ *
+ * @param date - The starting date
+ * @param days - Number of days to subtract
+ * @returns A new NepaliDate object
+ */
+export function subDays(date: NepaliDate, days: number): NepaliDate {
+  return addDays(date, -days)
+}
+
+/**
+ * Adds a specific number of months to a Nepali date.
+ * Caps the day to the maximum days in the resulting month.
+ *
+ * @param date - The starting date
+ * @param months - Number of months to add
+ * @returns A new NepaliDate object
+ */
+export function addMonths(date: NepaliDate, months: number): NepaliDate {
+  let newYear = date.year
+  let newMonth = date.month + months
+  
+  while (newMonth > 12) {
+    newYear++
+    newMonth -= 12
+  }
+  while (newMonth < 1) {
+    newYear--
+    newMonth += 12
+  }
+  
+  const maxDaysInNewMonth = getDaysInBsMonth(newYear, newMonth)
+  const newDay = Math.min(date.day, maxDaysInNewMonth)
+  
+  return { year: newYear, month: newMonth, day: newDay }
+}
+
+/**
+ * Subtracts a specific number of months from a Nepali date.
+ *
+ * @param date - The starting date
+ * @param months - Number of months to subtract
+ * @returns A new NepaliDate object
+ */
+export function subMonths(date: NepaliDate, months: number): NepaliDate {
+  return addMonths(date, -months)
+}
+
+/**
+ * Adds a specific number of years to a Nepali date.
+ * Caps the day to the maximum days in the resulting month if needed.
+ *
+ * @param date - The starting date
+ * @param years - Number of years to add
+ * @returns A new NepaliDate object
+ */
+export function addYears(date: NepaliDate, years: number): NepaliDate {
+  const newYear = date.year + years
+  const maxDays = getDaysInBsMonth(newYear, date.month)
+  return { year: newYear, month: date.month, day: Math.min(date.day, maxDays) }
+}
+
+/**
+ * Subtracts a specific number of years from a Nepali date.
+ *
+ * @param date - The starting date
+ * @param years - Number of years to subtract
+ * @returns A new NepaliDate object
+ */
+export function subYears(date: NepaliDate, years: number): NepaliDate {
+  return addYears(date, -years)
+}
+
+/**
+ * Gets the first day of the month for the given date.
+ *
+ * @param date - The target date
+ * @returns A new NepaliDate set to the 1st of the month
+ */
+export function startOfMonth(date: NepaliDate): NepaliDate {
+  return { year: date.year, month: date.month, day: 1 }
+}
+
+/**
+ * Gets the last day of the month for the given date.
+ *
+ * @param date - The target date
+ * @returns A new NepaliDate set to the last day of the month
+ */
+export function endOfMonth(date: NepaliDate): NepaliDate {
+  return { year: date.year, month: date.month, day: getDaysInBsMonth(date.year, date.month) }
+}
+
+/**
+ * Gets the first day of the year for the given date.
+ *
+ * @param date - The target date
+ * @returns A new NepaliDate set to Baisakh 1st
+ */
+export function startOfYear(date: NepaliDate): NepaliDate {
+  return { year: date.year, month: 1, day: 1 }
+}
+
+/**
+ * Gets the last day of the year for the given date.
+ *
+ * @param date - The target date
+ * @returns A new NepaliDate set to Chaitra's last day
+ */
+export function endOfYear(date: NepaliDate): NepaliDate {
+  return { year: date.year, month: 12, day: getDaysInBsMonth(date.year, 12) }
+}
+
+/**
+ * Checks if two dates are exactly the same.
+ */
+export function isSameDate(date1: NepaliDate, date2: NepaliDate): boolean {
+  return compareBsDates(date1, date2) === 0
+}
+
+/**
+ * Checks if the first date is strictly before the second date.
+ */
+export function isBefore(date1: NepaliDate, date2: NepaliDate): boolean {
+  return compareBsDates(date1, date2) < 0
+}
+
+/**
+ * Checks if the first date is strictly after the second date.
+ */
+export function isAfter(date1: NepaliDate, date2: NepaliDate): boolean {
+  return compareBsDates(date1, date2) > 0
+}
+
+/**
+ * Checks if the given date is today.
+ */
+export function isToday(date: NepaliDate): boolean {
+  return isSameDate(date, getTodayBs())
+}
+
+/**
+ * Checks if the given date is in the future.
+ */
+export function isFuture(date: NepaliDate): boolean {
+  return isAfter(date, getTodayBs())
+}
+
+/**
+ * Checks if the given date is in the past.
+ */
+export function isPast(date: NepaliDate): boolean {
+  return isBefore(date, getTodayBs())
+}
+
+/**
+ * Calculates the exact difference in days between two dates.
+ *
+ * @returns The number of days. Positive if date1 is after date2.
+ */
+export function differenceInDays(date1: NepaliDate, date2: NepaliDate): number {
+  const ad1 = bsToAd(date1.year, date1.month, date1.day)
+  const ad2 = bsToAd(date2.year, date2.month, date2.day)
+  
+  const utc1 = Date.UTC(ad1.year, ad1.month - 1, ad1.day)
+  const utc2 = Date.UTC(ad2.year, ad2.month - 1, ad2.day)
+  
+  return Math.round((utc1 - utc2) / (1000 * 60 * 60 * 24))
+}
+
+/**
+ * Calculates the difference in months between two dates.
+ */
+export function differenceInMonths(date1: NepaliDate, date2: NepaliDate): number {
+  return (date1.year - date2.year) * 12 + (date1.month - date2.month)
+}
+
+/**
+ * Calculates the difference in years between two dates.
+ */
+export function differenceInYears(date1: NepaliDate, date2: NepaliDate): number {
+  return date1.year - date2.year
+}
+
+/**
+ * Determines the day of the week (0-6) for a specific date.
+ * 0 is Sunday, 6 is Saturday.
+ */
+export function getDayOfWeek(date: NepaliDate): number {
+  const ad = bsToAd(date.year, date.month, date.day)
+  return new Date(ad.year, ad.month - 1, ad.day).getDay()
+}
+
+/**
+ * Checks if the date falls on a weekend.
+ * In Nepal, Saturday (6) is considered the weekend.
+ */
+export function isWeekend(date: NepaliDate): boolean {
+  return getDayOfWeek(date) === 6
+}

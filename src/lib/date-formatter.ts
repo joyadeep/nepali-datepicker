@@ -5,7 +5,7 @@
  * Includes utility functions for converting numbers to Nepali numerals and handling common date string operations.
  */
 import type { EnglishDate, NepaliDate } from '@/lib/date-converter'
-import { adToBs, bsToAd, getTodayBs } from '@/lib/date-converter'
+import { adToBs, bsToAd, getTodayBs, differenceInDays } from '@/lib/date-converter'
 import { NEPALI_DAYS, NEPALI_MONTHS, NEPALI_NUMERALS } from '@/lib/nepali-date-data'
 
 /** Supported languages for date display */
@@ -259,4 +259,77 @@ export function getBsDateString(
   language: Language = 'en'
 ): string {
   return formatBsDate(date, format, language)
+}
+
+/**
+ * Converts a Nepali numeral string back to an English number.
+ *
+ * @example
+ * toEnglishNumeral("२०८२") // Returns 2082
+ *
+ * @param nepaliNumStr - The Nepali numeral string
+ * @returns The numeric value in English digits
+ */
+export function toEnglishNumeral(nepaliNumStr: string): number {
+  const nepaliToEnglishMap: Record<string, string> = {
+    '०': '0', '१': '1', '२': '2', '३': '3', '४': '4',
+    '५': '5', '६': '6', '७': '7', '८': '8', '९': '9'
+  }
+  
+  const engStr = nepaliNumStr
+    .split('')
+    .map((char) => nepaliToEnglishMap[char] || char)
+    .join('')
+    
+  return parseInt(engStr, 10)
+}
+
+/**
+ * Returns a human-readable relative time string (e.g., "2 days ago", "In 3 months").
+ *
+ * @param date - The NepaliDate to compare against today
+ * @param language - Output language (default: 'en')
+ * @returns Formatted relative time string
+ */
+export function timeAgo(date: NepaliDate, language: Language = 'en'): string {
+  const daysDiff = differenceInDays(getTodayBs(), date)
+  
+  if (daysDiff === 0) return language === 'ne' ? 'आज' : 'Today'
+  if (daysDiff === 1) return language === 'ne' ? 'हिजो' : 'Yesterday'
+  if (daysDiff === -1) return language === 'ne' ? 'भोलि' : 'Tomorrow'
+  
+  if (daysDiff > 0) {
+    if (daysDiff < 30) {
+      return language === 'ne' 
+        ? `${toNepaliNumeral(daysDiff)} दिन अगाडि` 
+        : `${daysDiff} days ago`
+    }
+    if (daysDiff < 365) {
+      const months = Math.floor(daysDiff / 30)
+      return language === 'ne' 
+        ? `${toNepaliNumeral(months)} महिना अगाडि` 
+        : `${months} months ago`
+    }
+    const years = Math.floor(daysDiff / 365)
+    return language === 'ne' 
+      ? `${toNepaliNumeral(years)} वर्ष अगाडि` 
+      : `${years} years ago`
+  } else {
+    const absDays = Math.abs(daysDiff)
+    if (absDays < 30) {
+      return language === 'ne' 
+        ? `${toNepaliNumeral(absDays)} दिन पछि` 
+        : `In ${absDays} days`
+    }
+    if (absDays < 365) {
+      const months = Math.floor(absDays / 30)
+      return language === 'ne' 
+        ? `${toNepaliNumeral(months)} महिना पछि` 
+        : `In ${months} months`
+    }
+    const years = Math.floor(absDays / 365)
+    return language === 'ne' 
+      ? `${toNepaliNumeral(years)} वर्ष पछि` 
+      : `In ${years} years`
+  }
 }
