@@ -13,7 +13,8 @@
       "import": "./dist/lib/index.js",
       "require": "./dist/lib/index.cjs"
     },
-    "./styles.css": "./dist/lib/nepali-datepicker.css"
+    "./styles.css": "./dist/lib/nepali-datepicker.css",
+    "./dist/lib/nepali-datepicker.css": "./dist/lib/nepali-datepicker.css"
   },
   "files": [
     "dist/lib",
